@@ -1,0 +1,20 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "SMP Core",
+    "description": "AntiCheat + TPA + Trade + Shop + Admin",
+    "uuid": "b3a1b8f2-9e21-4c7e-bc5f-111111111111",
+    "version": [1,0,0],
+    "min_engine_version": [1,20,0]
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "c4d2c7e1-3f99-4e1e-aaaa-222222222222",
+      "version": [1,0,0],
+      "entry": "main.js"
+    }
+  ],
+  "capabilities": ["script_eval"]
+}
