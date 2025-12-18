@@ -3,7 +3,9 @@ import {
   addAlt,
   removeAlt,
   listAlts,
-  getAltSession
+  getAltSession,
+  saveStore,
+  loadStore
 } from "./storage.js";
 
 let cryptoKey = null;
@@ -20,7 +22,6 @@ function clear(node) {
   while (node.firstChild) node.removeChild(node.firstChild);
 }
 
-// --- placeholder client adapter ---
 const ClientSession = {
   async logout() {
     console.warn("logout() placeholder");
@@ -39,8 +40,42 @@ async function renderList() {
   const alts = await listAlts(cryptoKey);
 
   const header = el("h3", { innerText: "Alt Manager" });
+
+  // top buttons: add / export / import
   const addBtn = el("button", { innerText: "Add Alt" });
   addBtn.onclick = () => renderAdd();
+
+  const exportBtn = el("button", { innerText: "Export Backup" });
+  exportBtn.onclick = async () => {
+    const store = await loadStore(cryptoKey);
+    const blob = new Blob([JSON.stringify(store)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "alts_backup.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importBtn = el("button", { innerText: "Import Backup" });
+  importBtn.onclick = async () => {
+    const fileInput = el("input", { type: "file", accept: ".json" });
+    fileInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      const text = await file.text();
+      try {
+        const data = JSON.parse(text);
+        await saveStore(cryptoKey, data);
+        renderList();
+      } catch {
+        alert("Invalid backup file");
+      }
+    };
+    fileInput.click();
+  };
+
+  const topBar = el("div");
+  topBar.append(addBtn, exportBtn, importBtn);
 
   const list = el("div");
   alts.forEach(a => {
@@ -55,17 +90,24 @@ async function renderList() {
       await ClientSession.reload();
     };
 
+    const copyBtn = el("button", { innerText: "Copy Token" });
+    copyBtn.onclick = async () => {
+      const session = await getAltSession(cryptoKey, a.id);
+      navigator.clipboard.writeText(session);
+      alert("Session copied to clipboard!");
+    };
+
     const del = el("button", { innerText: "Delete" });
     del.onclick = async () => {
       await removeAlt(cryptoKey, a.id);
       renderList();
     };
 
-    row.append(name, use, del);
+    row.append(name, use, copyBtn, del);
     list.append(row);
   });
 
-  root.append(header, addBtn, list);
+  root.append(header, topBar, list);
 }
 
 // --- render add new alt section ---
