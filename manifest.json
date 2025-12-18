@@ -3,11 +3,16 @@
   "id": "revenge-alt-manager",
   "version": "1.0.0",
   "description": "Local-only encrypted alt/session switcher",
-  "author": "private",
-  "main": "https://raw.githubusercontent.com/username/repo/main/index.js",
+  "author": "djedkin662",
+  "main": "https://raw.githubusercontent.com/djedkin662/minecraft/main/index.js",
   "permissions": [],
   "ui": {
     "mount": "#revenge-alt-root",
-    "styles": "https://raw.githubusercontent.com/username/repo/main/styles.css"
-  }
+    "styles": "https://raw.githubusercontent.com/djedkin662/minecraft/main/styles.css"
+  },
+  "files": [
+    "https://raw.githubusercontent.com/djedkin662/minecraft/main/storage.js",
+    "https://raw.githubusercontent.com/djedkin662/minecraft/main/index.js",
+    "https://raw.githubusercontent.com/djedkin662/minecraft/main/styles.css"
+  ]
 }
