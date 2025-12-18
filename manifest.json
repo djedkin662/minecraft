@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "description": "Local-only encrypted alt/session switcher",
   "author": "private",
-  "main": "index.js",
+  "main": "https://raw.githubusercontent.com/username/repo/main/index.js",
   "permissions": [],
   "ui": {
     "mount": "#revenge-alt-root",
-    "styles": "styles.css"
+    "styles": "https://raw.githubusercontent.com/username/repo/main/styles.css"
   }
 }
