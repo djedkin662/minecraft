@@ -10,6 +10,7 @@ import {
 
 let cryptoKey = null;
 let root;
+let altInstances = {}; // { altId: {win, interval} }
 
 function el(tag, props = {}, ...kids) {
   const e = document.createElement(tag);
@@ -22,30 +23,57 @@ function clear(node) {
   while (node.firstChild) node.removeChild(node.firstChild);
 }
 
+// placeholder client session
 const ClientSession = {
-  async logout() {
-    console.warn("logout() placeholder");
-  },
-  async loginWithSession(sessionBlob) {
-    console.warn("loginWithSession() placeholder", sessionBlob);
-  },
-  async reload() {
-    location.reload();
-  }
+  async logout() { console.warn("logout() placeholder"); },
+  async loginWithSession(sessionBlob) { console.warn("loginWithSession() placeholder", sessionBlob); },
+  async reload() { location.reload(); }
 };
 
-// --- render list of alts ---
+// --- multi-instance logic ---
+async function startAllAlts() {
+  const alts = await listAlts(cryptoKey);
+  for (const alt of alts) {
+    if (altInstances[alt.id] && !altInstances[alt.id].win.closed) continue;
+
+    const newWin = window.open("", "_blank", "width=400,height=600");
+    newWin.document.write(`<h3>Loading alt: ${alt.name}</h3>`);
+
+    const session = await getAltSession(cryptoKey, alt.id);
+
+    // placeholder login
+    // newWin.ClientSession.loginWithSession(session);
+
+    // auto-refresh interval every 4 minutes
+    const interval = setInterval(() => {
+      if (!newWin.closed) newWin.location.reload();
+      else clearInterval(interval);
+    }, 4 * 60 * 1000); // 4 minutes
+
+    altInstances[alt.id] = { win: newWin, interval };
+  }
+}
+
+function stopAllAlts() {
+  for (const obj of Object.values(altInstances)) {
+    if (obj.win && !obj.win.closed) obj.win.close();
+    if (obj.interval) clearInterval(obj.interval);
+  }
+  altInstances = {};
+}
+
+// --- render list ---
 async function renderList() {
   clear(root);
   const alts = await listAlts(cryptoKey);
 
   const header = el("h3", { innerText: "Alt Manager" });
 
-  // top buttons: add / export / import
-  const addBtn = el("button", { innerText: "Add Alt" });
+  // top bar buttons
+  const addBtn = el("button", { innerText: "➕ Add Alt" });
   addBtn.onclick = () => renderAdd();
 
-  const exportBtn = el("button", { innerText: "Export Backup" });
+  const exportBtn = el("button", { innerText: "💾 Export" });
   exportBtn.onclick = async () => {
     const store = await loadStore(cryptoKey);
     const blob = new Blob([JSON.stringify(store)], { type: "application/json" });
@@ -57,7 +85,7 @@ async function renderList() {
     URL.revokeObjectURL(url);
   };
 
-  const importBtn = el("button", { innerText: "Import Backup" });
+  const importBtn = el("button", { innerText: "📂 Import" });
   importBtn.onclick = async () => {
     const fileInput = el("input", { type: "file", accept: ".json" });
     fileInput.onchange = async (e) => {
@@ -74,15 +102,22 @@ async function renderList() {
     fileInput.click();
   };
 
-  const topBar = el("div");
-  topBar.append(addBtn, exportBtn, importBtn);
+  const startAllBtn = el("button", { innerText: "🚀 Start All" });
+  startAllBtn.onclick = startAllAlts;
 
+  const stopAllBtn = el("button", { innerText: "🛑 Stop All" });
+  stopAllBtn.onclick = stopAllAlts;
+
+  const topBar = el("div");
+  topBar.append(addBtn, exportBtn, importBtn, startAllBtn, stopAllBtn);
+
+  // list of alts
   const list = el("div");
   alts.forEach(a => {
     const row = el("div", { className: "alt-row" });
     const name = el("span", { innerText: a.name });
 
-    const use = el("button", { innerText: "Switch" });
+    const use = el("button", { innerText: "⚡ Switch" });
     use.onclick = async () => {
       const session = await getAltSession(cryptoKey, a.id);
       await ClientSession.logout();
@@ -90,14 +125,14 @@ async function renderList() {
       await ClientSession.reload();
     };
 
-    const copyBtn = el("button", { innerText: "Copy Token" });
+    const copyBtn = el("button", { innerText: "📋 Copy" });
     copyBtn.onclick = async () => {
       const session = await getAltSession(cryptoKey, a.id);
       navigator.clipboard.writeText(session);
-      alert("Session copied to clipboard!");
+      alert("Session copied!");
     };
 
-    const del = el("button", { innerText: "Delete" });
+    const del = el("button", { innerText: "❌ Delete" });
     del.onclick = async () => {
       await removeAlt(cryptoKey, a.id);
       renderList();
@@ -110,17 +145,18 @@ async function renderList() {
   root.append(header, topBar, list);
 }
 
-// --- render add new alt section ---
+// --- render add ---
 function renderAdd() {
   clear(root);
 
-  const title = el("h3", { innerText: "Add Alt" });
+  const title = el("h3", { innerText: "➕ Add Alt" });
   const addSection = el("div", { className: "add-section" });
+
   const name = el("input", { placeholder: "Alt name" });
   const session = el("textarea", { placeholder: "Paste session blob" });
 
-  const save = el("button", { innerText: "Save" });
-  const back = el("button", { innerText: "Back" });
+  const save = el("button", { innerText: "💾 Save" });
+  const back = el("button", { innerText: "🔙 Back" });
 
   save.onclick = async () => {
     if (!name.value || !session.value) return alert("Fill in all fields");
@@ -142,6 +178,6 @@ export async function startAltManager(mountNode) {
   renderList();
 }
 
-// auto-start if mount exists
+// auto-start
 const mountNode = document.querySelector("#revenge-alt-root");
 if (mountNode) startAltManager(mountNode);
