@@ -1,27 +1,67 @@
 #revenge-alt-root {
-  padding: 12px;
-  font-family: system-ui, sans-serif;
+  padding: 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #1e1e2f;
+  color: #fff;
+  border-radius: 12px;
+  width: 300px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+h3 {
+  margin-bottom: 12px;
+  text-align: center;
+  font-size: 18px;
 }
 
 .alt-row {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  background: #2a2a3d;
+  padding: 6px 10px;
   margin: 6px 0;
+  border-radius: 8px;
+  font-size: 14px;
 }
 
 button {
-  padding: 6px 10px;
+  background: #3f3f5c;
+  color: #fff;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #57577c;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 6px 8px;
+  margin: 4px 0;
   border-radius: 6px;
   border: none;
-  cursor: pointer;
+  font-size: 14px;
 }
 
 textarea {
-  width: 100%;
-  min-height: 80px;
+  min-height: 70px;
+  resize: vertical;
 }
 
-input {
-  width: 100%;
+.add-section {
+  margin-bottom: 12px;
+}
+
+#revenge-alt-root::-webkit-scrollbar {
+  width: 6px;
+}
+
+#revenge-alt-root::-webkit-scrollbar-thumb {
+  background: #57577c;
+  border-radius: 3px;
 }
