@@ -1,0 +1,27 @@
+#revenge-alt-root {
+  padding: 12px;
+  font-family: system-ui, sans-serif;
+}
+
+.alt-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+textarea {
+  width: 100%;
+  min-height: 80px;
+}
+
+input {
+  width: 100%;
+}
