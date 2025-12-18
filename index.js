@@ -1,8 +1,3 @@
-// index.js
-// UI + wiring skeleton (SAFE PLACEHOLDERS)
-// NOTE: Session switching is intentionally abstracted. Plug into the client's
-// *official* session APIs only. No token scraping or raw auth handling here.
-
 import {
   initStore,
   addAlt,
@@ -11,7 +6,9 @@ import {
   getAltSession
 } from "./storage.js";
 
-// ---- basic UI helpers ----
+let cryptoKey = null;
+let root;
+
 function el(tag, props = {}, ...kids) {
   const e = document.createElement(tag);
   Object.assign(e, props);
@@ -23,12 +20,7 @@ function clear(node) {
   while (node.firstChild) node.removeChild(node.firstChild);
 }
 
-// ---- app state ----
-let cryptoKey = null;
-let root;
-
-// ---- client session adapter (PLACEHOLDER) ----
-// Replace these with the client’s *supported* APIs.
+// --- placeholder client adapter ---
 const ClientSession = {
   async logout() {
     console.warn("logout() placeholder");
@@ -41,14 +33,13 @@ const ClientSession = {
   }
 };
 
-// ---- views ----
+// --- render list of alts ---
 async function renderList() {
   clear(root);
   const alts = await listAlts(cryptoKey);
 
   const header = el("h3", { innerText: "Alt Manager" });
   const addBtn = el("button", { innerText: "Add Alt" });
-
   addBtn.onclick = () => renderAdd();
 
   const list = el("div");
@@ -77,10 +68,12 @@ async function renderList() {
   root.append(header, addBtn, list);
 }
 
+// --- render add new alt section ---
 function renderAdd() {
   clear(root);
 
   const title = el("h3", { innerText: "Add Alt" });
+  const addSection = el("div", { className: "add-section" });
   const name = el("input", { placeholder: "Alt name" });
   const session = el("textarea", { placeholder: "Paste session blob" });
 
@@ -88,20 +81,21 @@ function renderAdd() {
   const back = el("button", { innerText: "Back" });
 
   save.onclick = async () => {
-    if (!name.value || !session.value) return alert("Missing fields");
+    if (!name.value || !session.value) return alert("Fill in all fields");
     await addAlt(cryptoKey, name.value, session.value);
     renderList();
   };
 
   back.onclick = () => renderList();
 
-  root.append(title, name, session, save, back);
+  addSection.append(name, session, save, back);
+  root.append(title, addSection);
 }
 
-// ---- bootstrap ----
+// --- bootstrap ---
 export async function startAltManager(mountNode) {
   root = mountNode;
-  const password = prompt("Set / enter encryption password");
+  const password = prompt("Enter encryption password");
   cryptoKey = await initStore(password);
   renderList();
 }
